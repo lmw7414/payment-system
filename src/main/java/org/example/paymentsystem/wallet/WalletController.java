@@ -15,12 +15,9 @@ public class WalletController {
 
     @GetMapping("/api/users/{userId}/wallets")
     public FindWalletResponse findWalletByUserId(@PathVariable Long userId) {
-        return walletService.findWalletByUserId(userId);
-    }
-
-    @PostMapping("/api/wallets/add-balance")
-    public AddBalanceWalletResponse addBalance(@RequestBody AddBalanceWalletRequest request) {
-        return walletService.addBalance(request);
+        FindWalletResponse response = walletService.findWalletByUserId(userId);
+        if(response == null) throw new RuntimeException("지갑이 존재하지 않습니다.");
+        return response;
     }
 
 }

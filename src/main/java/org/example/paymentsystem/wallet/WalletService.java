@@ -45,8 +45,7 @@ public class WalletService {
                 .orElse(null);
     }
 
-
-    private Wallet findWalletByIdOrThrowException(Long walletId) {
+    public Wallet findWalletByIdOrThrowException(Long walletId) {
         return walletRepository.findById(walletId).orElseThrow(() -> new RuntimeException("지갑이 존재하지 않음"));
     }
 }
