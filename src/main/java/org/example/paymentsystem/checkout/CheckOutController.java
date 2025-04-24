@@ -1,23 +1,58 @@
-package org.example.paymentsystem.pg;
+package org.example.paymentsystem.checkout;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.json.JSONParser;
+import org.example.paymentsystem.order.Order;
+import org.example.paymentsystem.order.OrderRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.UUID;
 
 @Slf4j
 @Controller
-public class WidgetController {
+@RequiredArgsConstructor
+public class CheckOutController {
+    private final OrderRepository orderRepository;
+
+    @GetMapping("/order")
+    public String order(
+            @RequestParam("userId") Long userId,
+            @RequestParam("courseId") Long courseId,
+            @RequestParam("courseName") String courseName,
+            @RequestParam("amount") String amount,
+            Model model
+
+    ) {
+        Order order = new Order();
+        order.setAmount(new BigDecimal(amount));
+        order.setCourseId(courseId);
+        order.setCourseName(courseName);
+        order.setUserId(userId);
+        order.setRequestId(UUID.randomUUID().toString());
+        order.setStatus(Order.Status.WAIT);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        model.addAttribute("courseName", courseName);
+        model.addAttribute("requestId", order.getRequestId());
+        model.addAttribute("amount", amount);
+        model.addAttribute("customerKey", "customerKey-" + userId);
+        return "/order.html";
+    }
 
     @GetMapping("/checkout")
     public String checkout() {
