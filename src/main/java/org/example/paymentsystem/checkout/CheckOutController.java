@@ -1,25 +1,17 @@
 package org.example.paymentsystem.checkout;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.paymentsystem.order.Order;
 import org.example.paymentsystem.order.OrderRepository;
-import org.springframework.http.MediaType;
+import org.example.paymentsystem.processing.PaymentProcessingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.UUID;
 
 @Slf4j
@@ -27,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CheckOutController {
     private final OrderRepository orderRepository;
-
+    private final PaymentProcessingService paymentProcessingService;
     @GetMapping("/order")
     public String order(
             @RequestParam("userId") Long userId,
@@ -54,6 +46,12 @@ public class CheckOutController {
         return "/order.html";
     }
 
+
+    @GetMapping("/order-requested")
+    public String orderRequested() {
+        return "/order-requested.html";
+    }
+
     @GetMapping("/checkout")
     public String checkout() {
         return "/checkout.html";
@@ -69,36 +67,27 @@ public class CheckOutController {
         return "/fail.html";
     }
 
-    @RequestMapping(value = "/confirm")
-    public ResponseEntity<Object> confirmPayment(@RequestBody String jsonBody) throws Exception {
-        // 클라이언트에서 받은 JSON 요청 바디입니다.
-        final JsonNode jsonNode = new ObjectMapper().readTree(jsonBody);
-        final ConfirmRequest request = new ConfirmRequest(
-                jsonNode.get("paymentKey").asText(),
-                jsonNode.get("orderId").asText(),
-                jsonNode.get("amount").asText()
-        );
+    /*
+    1. 주문 서비스 - 주문 상태가 변경됨 > REQUESTED
+    2. 주문 서비스 > 결제 서비스 승인 요청(POST API /confirm)
+    3. 결제 서비스 > PG 승인 요청
+    4. 결제 서비스 > 결제 기록 저장
+    ---
+    6. 주문 서비스에 응답
+    7. 주문을 APPROVED 상태로 변경
+     */
 
-        // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
-        // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
-        String widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
-        Base64.Encoder encoder = Base64.getEncoder();
-        byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
-        String authorizations = "Basic " + new String(encodedBytes);
+    @RequestMapping(method = RequestMethod.POST, value = "/confirm")
+    public ResponseEntity<Object> confirmPayment(@RequestBody ConfirmRequest confirmRequest) throws Exception {
+        // 1. 주문 서비스 - 주문 상태가 변경됨 > REQUESTED
+        Order order = orderRepository.findByRequestId(confirmRequest.orderId());
+        order.setUpdatedAt(LocalDateTime.now());
+        order.setStatus(Order.Status.REQUESTED);
+        orderRepository.save(order);
 
-        RestClient defaultClient = RestClient.create();
-        final Object object = defaultClient.post()
-                .uri("https://api.tosspayments.com/v1/payments/confirm")
-                .headers(httpHeaders -> {
-                    httpHeaders.add("Authorization", authorizations);
-                    httpHeaders.add("Content-Type", "application/json");
-                })
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
-                .retrieve()
-                .toEntity(Object.class);
-        return ResponseEntity.ok(object);
+        // 2. 주문 서비스 > 결제 서비스 승인 요청(POST API /confirm)
+        paymentProcessingService.createPayment(confirmRequest);
+        return ResponseEntity.ok(null);
     }
 
-    public record ConfirmRequest(String paymentKey, String orderId, String amount){}
 }

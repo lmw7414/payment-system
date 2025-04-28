@@ -26,10 +26,10 @@
 <script>
   const coupon = document.getElementById("coupon-box");
   const button = document.getElementById("payment-button");
-  const amount = `[[${amount}]]`;
-  const orderName = `[[${courseName}]]`;
-  const orderId = `[[${requestId}]]`;
-  const customerKey = `[[${customerKey}]]`;
+  const amount = [[${amount}]];
+  const orderName = `[[${courseName}]]`
+  const orderId = `[[${requestId}]]`
+  const customerKey = `[[${customerKey}]]`
   main();
   async function main() {
     // ------  결제위젯 초기화 ------
@@ -45,7 +45,7 @@
     // ------ 주문의 결제 금액 설정 ------
     await widgets.setAmount({
       currency: "KRW",
-      value: 50000,
+      value: amount,
     });
 
     await Promise.all([
@@ -63,7 +63,7 @@
       await widgets.requestPayment({
         orderId: orderId,
         orderName: orderName,
-        successUrl: window.location.origin + "/success",
+        successUrl: window.location.origin + "/order-requested",
         failUrl: window.location.origin + "/fail",
         customerEmail: "customer123@gmail.com",
         customerName: "김토스",

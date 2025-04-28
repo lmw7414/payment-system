@@ -37,4 +37,8 @@ public class TransactionService {
         transactionRepository.save(transaction);
         return new PaymentTransactionResponse(addBalanceWalletResponse.id(), addBalanceWalletResponse.balance());
     }
+
+    public void pgPayment() {
+
+    }
 }
