@@ -1,8 +1,11 @@
 package org.example.paymentsystem.wallet;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.paymentsystem.exception.ChargeFailException;
+import org.example.paymentsystem.exception.ErrorCode;
+import org.example.paymentsystem.wallet.dto.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +20,7 @@ public class WalletService {
     public CreateWalletResponse createWallet(CreateWalletRequest request) {
         FindWalletResponse isWalletExist = findWalletByUserId(request.userId());
         if (isWalletExist != null) {
-            throw new RuntimeException("이미 지갑이 있습니다.");
+            throw new ChargeFailException(ErrorCode.WALLET_ALREADY_EXISTS);
         }
         final Wallet wallet = walletRepository.save(new Wallet(request.userId()));
         return CreateWalletResponse.from(wallet);
@@ -30,8 +33,8 @@ public class WalletService {
 
         BigDecimal balance = wallet.getBalance();
         balance = balance.add(request.amount());
-        if(balance.compareTo(BigDecimal.ZERO) < 0) throw new RuntimeException("잔액이 충분하지 않습니다.");
-        if(BALANCE_LIMIT.compareTo(balance) < 0) throw new RuntimeException("한도를 초과했습니다.");
+        if(balance.compareTo(BigDecimal.ZERO) < 0) throw new ChargeFailException(ErrorCode.NOT_ENOUGH_MONEY);
+        if(BALANCE_LIMIT.compareTo(balance) < 0) throw new ChargeFailException(ErrorCode.EXCEEDED_BALANCE);
         wallet.setBalance(balance);
         wallet.setUpdatedAt(LocalDateTime.now());
         walletRepository.save(wallet);
@@ -46,6 +49,6 @@ public class WalletService {
     }
 
     public Wallet findWalletByIdOrThrowException(Long walletId) {
-        return walletRepository.findById(walletId).orElseThrow(() -> new RuntimeException("지갑이 존재하지 않음"));
+        return walletRepository.findById(walletId).orElseThrow(() -> new ChargeFailException(ErrorCode.WALLET_NOT_FOUND));
     }
 }

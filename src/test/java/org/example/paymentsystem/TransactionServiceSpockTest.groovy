@@ -1,13 +1,14 @@
 package org.example.paymentsystem
 
-import org.example.paymentsystem.transaction.ChargeTransactionRequest
-import org.example.paymentsystem.transaction.PaymentTransactionRequest
+import org.example.paymentsystem.exception.ChargeFailException
+import org.example.paymentsystem.transaction.dto.ChargeTransactionRequest
+import org.example.paymentsystem.transaction.dto.PaymentTransactionRequest
 import org.example.paymentsystem.transaction.Transaction
 import org.example.paymentsystem.transaction.TransactionRepository
 import org.example.paymentsystem.transaction.TransactionService
-import org.example.paymentsystem.wallet.AddBalanceWalletRequest
-import org.example.paymentsystem.wallet.AddBalanceWalletResponse
-import org.example.paymentsystem.wallet.FindWalletResponse
+import org.example.paymentsystem.wallet.dto.AddBalanceWalletRequest
+import org.example.paymentsystem.wallet.dto.AddBalanceWalletResponse
+import org.example.paymentsystem.wallet.dto.FindWalletResponse
 import org.example.paymentsystem.wallet.Wallet
 import org.example.paymentsystem.wallet.WalletService
 import spock.lang.Specification
@@ -46,7 +47,7 @@ class TransactionServiceSpockTest extends Specification {
         when:
         transactionService.charge(request);
         then:
-        def ex = thrown(RuntimeException)
+        def ex = thrown(ChargeFailException)
         ex.message.equals("이미 충전된 거래입니다.")
     }
 
@@ -58,8 +59,8 @@ class TransactionServiceSpockTest extends Specification {
         when:
         transactionService.charge(request)
         then:
-        def ex = thrown(RuntimeException);
-        ex.message.equals("사용자 지갑이 존재하지 않습니다.")
+        def ex = thrown(ChargeFailException);
+        ex.message.equals("지갑이 존재하지 않습니다.")
         println ex
     }
 

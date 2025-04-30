@@ -1,7 +1,8 @@
 package org.example.paymentsystem
 
-import org.example.paymentsystem.wallet.AddBalanceWalletRequest
-import org.example.paymentsystem.wallet.CreateWalletRequest
+import org.example.paymentsystem.exception.ChargeFailException
+import org.example.paymentsystem.wallet.dto.AddBalanceWalletRequest
+import org.example.paymentsystem.wallet.dto.CreateWalletRequest
 import org.example.paymentsystem.wallet.Wallet
 import org.example.paymentsystem.wallet.WalletRepository
 import org.example.paymentsystem.wallet.WalletService
@@ -135,7 +136,7 @@ class WalletServiceSpockTest extends Specification {
         when:
         def result = walletService.addBalance(new AddBalanceWalletRequest(walletId, new BigDecimal(100000)))
         then:
-        def ex = thrown(RuntimeException)
+        def ex = thrown(ChargeFailException)
         println ex.message
         userWallet.balance.equals(new BigDecimal(10000));
     }
@@ -147,7 +148,7 @@ class WalletServiceSpockTest extends Specification {
         when:
         def result = walletService.addBalance(new AddBalanceWalletRequest(walletId, new BigDecimal(40000)))
         then:
-        def ex = thrown(RuntimeException)
+        def ex = thrown(ChargeFailException)
         println ex.message
     }
 

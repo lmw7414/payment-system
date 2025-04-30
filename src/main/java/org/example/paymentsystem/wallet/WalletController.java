@@ -1,6 +1,11 @@
 package org.example.paymentsystem.wallet;
 
 import lombok.RequiredArgsConstructor;
+import org.example.paymentsystem.exception.ChargeFailException;
+import org.example.paymentsystem.exception.ErrorCode;
+import org.example.paymentsystem.wallet.dto.CreateWalletRequest;
+import org.example.paymentsystem.wallet.dto.CreateWalletResponse;
+import org.example.paymentsystem.wallet.dto.FindWalletResponse;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +21,7 @@ public class WalletController {
     @GetMapping("/api/users/{userId}/wallets")
     public FindWalletResponse findWalletByUserId(@PathVariable Long userId) {
         FindWalletResponse response = walletService.findWalletByUserId(userId);
-        if(response == null) throw new RuntimeException("지갑이 존재하지 않습니다.");
+        if(response == null) throw new ChargeFailException(ErrorCode.WALLET_NOT_FOUND);
         return response;
     }
 
