@@ -1,10 +1,13 @@
 package org.example.paymentsystem;
 
-import org.example.paymentsystem.transaction.ChargeTransactionRequest;
+import org.example.paymentsystem.transaction.dto.ChargeTransactionRequest;
 import org.example.paymentsystem.transaction.LockedTransactionService;
-import org.example.paymentsystem.transaction.PaymentTransactionRequest;
+import org.example.paymentsystem.transaction.dto.PaymentTransactionRequest;
 import org.example.paymentsystem.transaction.TransactionRepository;
 import org.example.paymentsystem.wallet.*;
+import org.example.paymentsystem.wallet.dto.AddBalanceWalletRequest;
+import org.example.paymentsystem.wallet.dto.CreateWalletRequest;
+import org.example.paymentsystem.wallet.dto.CreateWalletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

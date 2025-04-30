@@ -1,14 +1,16 @@
-package org.example.paymentsystem.wallet;
+package org.example.paymentsystem.wallet.dto;
+
+import org.example.paymentsystem.wallet.Wallet;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record FindWalletResponse(
+public record AddBalanceWalletResponse(
         Long id, Long userId, BigDecimal balance, LocalDateTime createdAt, LocalDateTime updatedAt
 ) {
 
-    public static FindWalletResponse from(Wallet wallet) {
-        return new FindWalletResponse(
+    public static AddBalanceWalletResponse from(Wallet wallet) {
+        return new AddBalanceWalletResponse(
                 wallet.getId(),
                 wallet.getUserId(),
                 wallet.getBalance(),

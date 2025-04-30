@@ -1,8 +1,15 @@
 package org.example.paymentsystem;
 
-import jakarta.transaction.Transactional;
 import org.example.paymentsystem.transaction.*;
+import org.example.paymentsystem.transaction.dto.ChargeTransactionRequest;
+import org.example.paymentsystem.transaction.dto.ChargeTransactionResponse;
+import org.example.paymentsystem.transaction.dto.PaymentTransactionRequest;
+import org.example.paymentsystem.transaction.dto.PaymentTransactionResponse;
 import org.example.paymentsystem.wallet.*;
+import org.example.paymentsystem.wallet.dto.AddBalanceWalletRequest;
+import org.example.paymentsystem.wallet.dto.CreateWalletRequest;
+import org.example.paymentsystem.wallet.dto.CreateWalletResponse;
+import org.example.paymentsystem.wallet.dto.FindWalletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutorService;

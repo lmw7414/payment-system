@@ -1,4 +1,4 @@
-package org.example.paymentsystem.wallet;
+package org.example.paymentsystem.wallet.dto;
 
 public record CreateWalletRequest(Long userId) {
 }

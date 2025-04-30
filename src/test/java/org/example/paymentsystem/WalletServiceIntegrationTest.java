@@ -1,7 +1,7 @@
 package org.example.paymentsystem;
 
-import org.example.paymentsystem.wallet.CreateWalletRequest;
-import org.example.paymentsystem.wallet.CreateWalletResponse;
+import org.example.paymentsystem.wallet.dto.CreateWalletRequest;
+import org.example.paymentsystem.wallet.dto.CreateWalletResponse;
 import org.example.paymentsystem.wallet.WalletService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,6 @@
-package org.example.paymentsystem.wallet;
+package org.example.paymentsystem.wallet.dto;
+
+import org.example.paymentsystem.wallet.Wallet;
 
 import java.math.BigDecimal;
 
