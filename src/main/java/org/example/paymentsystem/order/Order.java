@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.paymentsystem.orderStatus.Status;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,8 +27,4 @@ public class Order {
     private Status status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public enum Status {
-        WAIT, REQUESTED, APPROVED
-    }
 }

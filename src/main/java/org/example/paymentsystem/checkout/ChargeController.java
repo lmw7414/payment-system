@@ -20,49 +20,42 @@ import static org.example.paymentsystem.orderStatus.Status.REQUESTED;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class CheckOutController {
+public class ChargeController {
     private final OrderRepository orderRepository;
     private final PaymentProcessingService paymentProcessingService;
 
-    @GetMapping("/order")
-    public String order(
+    @GetMapping("/charge-order")
+    public String charge(
             @RequestParam("userId") Long userId,
-            @RequestParam("courseId") Long courseId,
-            @RequestParam("courseName") String courseName,
             @RequestParam("amount") String amount,
             Model model
-
     ) {
         Order order = new Order();
         order.setAmount(new BigDecimal(amount));
-        order.setCourseId(courseId);
-        order.setCourseName(courseName);
         order.setUserId(userId);
         order.setRequestId(UUID.randomUUID().toString());
         order.setStatus(REQUESTED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
-        model.addAttribute("courseName", courseName);
         model.addAttribute("requestId", order.getRequestId());
         model.addAttribute("amount", amount);
         model.addAttribute("customerKey", "customerKey-" + userId);
-        return "/order.html";
+        return "/charge-order.html";
     }
 
-
-    @GetMapping("/order-requested")
+    @GetMapping("/charge-order-requested")
     public String orderRequested() {
-        return "/order-requested.html";
+        return "/charge-order-requested.html";
     }
 
-    @GetMapping("/fail")
+    @GetMapping("/charge-fail")
     public String fail() {
-        return "/fail.html";
+        return "/charge-fail.html";
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/confirm")
-    public ResponseEntity<Object> confirmPayment(@RequestBody ConfirmRequest confirmRequest) throws Exception {
+    @RequestMapping(method = RequestMethod.POST, value = "/charge-confirm")
+    public ResponseEntity<Object> confirm(@RequestBody ConfirmRequest confirmRequest) {
         // 1. 주문 서비스 - 주문 상태가 변경됨 > IN_PROGRESS
         Order order = orderRepository.findByRequestId(confirmRequest.orderId());
         order.setUpdatedAt(LocalDateTime.now());
@@ -70,7 +63,7 @@ public class CheckOutController {
         orderRepository.save(order);
 
         // 2. 주문 서비스 > 결제 서비스 승인 요청(POST API /confirm)
-        paymentProcessingService.createPayment(confirmRequest);
+        paymentProcessingService.createCharge(order.getUserId(), confirmRequest);
         return ResponseEntity.ok().build();
     }
 
