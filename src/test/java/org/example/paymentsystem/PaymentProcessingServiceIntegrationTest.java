@@ -69,7 +69,7 @@ public class PaymentProcessingServiceIntegrationTest {
         ConfirmRequest confirmRequest = new ConfirmRequest("paymentKey", requestId, "1000");
         doNothing().when(paymentGatewayService).confirm(any());
         // When
-        paymentProcessingService.createCharge(userId, confirmRequest);
+        paymentProcessingService.createCharge(userId, confirmRequest, false);
         // Then
         Order updated = orderRepository.findByRequestId(requestId);
         assertEquals(APPROVED, updated.getStatus());
@@ -84,7 +84,7 @@ public class PaymentProcessingServiceIntegrationTest {
         doNothing().when(paymentGatewayService).confirm(any());
         // When
         ChargeFailException ex = assertThrows(ChargeFailException.class, () -> {
-            paymentProcessingService.createCharge(userId, confirmRequest);
+            paymentProcessingService.createCharge(userId, confirmRequest, false);
         });
 
         // Then

@@ -63,7 +63,7 @@ public class ChargeController {
         orderRepository.save(order);
 
         // 2. 주문 서비스 > 결제 서비스 승인 요청(POST API /confirm)
-        paymentProcessingService.createCharge(order.getUserId(), confirmRequest);
+        paymentProcessingService.createCharge(order.getUserId(), confirmRequest, false);
         return ResponseEntity.ok().build();
     }
 
