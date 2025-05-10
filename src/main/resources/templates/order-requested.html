@@ -2,26 +2,90 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
+  <title>결제 성공</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      animation: fadeIn 1s ease-in;
+    }
+
+    .card {
+      background-color: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    h2 {
+      color: #22b8cf;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    p {
+      font-size: 16px;
+      margin: 10px 0;
+      color: #495057;
+    }
+
+    #paymentKey,
+    #orderId,
+    #amount {
+      font-weight: bold;
+      color: #212529;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
 <body>
-<h2>결제 성공</h2>
-<p id="paymentKey"></p>
-<p id="orderId"></p>
-<p id="amount"></p>
+<div class="card">
+  <h2>결제 성공 🎉</h2>
+  <p id="orderId"></p>
+  <p id="amount"></p>
+  <p id="paymentKey"></p>
+</div>
 
 <script>
-  // 쿼리 파라미터 값이 결제 요청할 때 보낸 데이터와 동일한지 반드시 확인하세요.
-  // 클라이언트에서 결제 금액을 조작하는 행위를 방지할 수 있습니다.
   const urlParams = new URLSearchParams(window.location.search);
   const paymentKey = urlParams.get("paymentKey");
   const orderId = urlParams.get("orderId");
   const amount = urlParams.get("amount");
 
+  const discountInfo = JSON.parse(localStorage.getItem("discountInfo") || "{}");
+  const usedBalance = Number(discountInfo.usedBalance || 0);
+  const totalAmount = Number(discountInfo.totalAmount || 0);
   async function confirm() {
     const requestData = {
       paymentKey: paymentKey,
       orderId: orderId,
       amount: amount,
+      usedBalance: usedBalance,
+      totalAmount: totalAmount,
     };
 
     const response = await fetch("/confirm", {
@@ -33,14 +97,12 @@
     });
 
     const json = await response.json();
-
+    localStorage.removeItem("discountInfo");
     if (!response.ok) {
-      // 결제 실패 비즈니스 로직을 구현하세요.
       console.log(json);
       window.location.href = `/fail?message=${json.message}&code=${json.code}`;
     }
 
-    // 결제 성공 비즈니스 로직을 구현하세요.
     console.log(json);
   }
   confirm();
@@ -50,7 +112,7 @@
   const amountElement = document.getElementById("amount");
 
   orderIdElement.textContent = "주문번호: " + orderId;
-  amountElement.textContent = "결제 금액: " + amount;
+  amountElement.textContent = "결제 금액: " + totalAmount;
   paymentKeyElement.textContent = "paymentKey: " + paymentKey;
 </script>
 </body>

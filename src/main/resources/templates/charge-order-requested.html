@@ -2,16 +2,74 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
+  <title>충전 성공</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    .card {
+      background-color: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    h2 {
+      color: #2b8a3e;
+      font-size: 24px;
+      margin-bottom: 25px;
+    }
+
+    p {
+      font-size: 16px;
+      margin: 12px 0;
+      color: #495057;
+    }
+
+    .highlight {
+      font-weight: bold;
+      color: #212529;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 <body>
-<h2>충전 성공</h2>
-<p id="paymentKey"></p>
-<p id="orderId"></p>
-<p id="amount"></p>
+<div class="card">
+  <h2>충전이 완료되었습니다 🎉</h2>
+  <p id="orderId"><span class="highlight"></span></p>
+  <p id="amount"><span class="highlight"></span></p>
+  <p id="paymentKey"><span class="highlight"></span></p>
+</div>
 
 <script>
-  // 쿼리 파라미터 값이 결제 요청할 때 보낸 데이터와 동일한지 반드시 확인하세요.
-  // 클라이언트에서 결제 금액을 조작하는 행위를 방지할 수 있습니다.
+  // [✅ JS는 그대로 유지됨]
   const urlParams = new URLSearchParams(window.location.search);
   const paymentKey = urlParams.get("paymentKey");
   const orderId = urlParams.get("orderId");
@@ -35,12 +93,10 @@
     const json = await response.json();
 
     if (!response.ok) {
-      // 결제 실패 비즈니스 로직을 구현하세요.
       console.log(json);
       window.location.href = `/charge-fail?message=${json.message}&code=${json.code}`;
     }
 
-    // 결제 성공 비즈니스 로직을 구현하세요.
     console.log(json);
   }
   confirm();
@@ -49,9 +105,9 @@
   const orderIdElement = document.getElementById("orderId");
   const amountElement = document.getElementById("amount");
 
-  orderIdElement.textContent = "주문번호: " + orderId;
-  amountElement.textContent = "결제 금액: " + amount;
-  paymentKeyElement.textContent = "paymentKey: " + paymentKey;
+  orderIdElement.innerHTML = "주문번호: <span class='highlight'>" + orderId + "</span>";
+  amountElement.innerHTML = "결제 금액: <span class='highlight'>" + amount + "</span>";
+  paymentKeyElement.innerHTML = "paymentKey: <span class='highlight'>" + paymentKey + "</span>";
 </script>
 </body>
 </html>

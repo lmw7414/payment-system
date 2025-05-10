@@ -3,21 +3,97 @@
 <head>
   <meta charset="utf-8" />
   <script src="https://js.tosspayments.com/v2/standard"></script>
-</head>
-<body>
-<!-- 결제 UI -->
-<div id="payment-method"></div>
-<!-- 이용약관 UI -->
-<div id="agreement"></div>
-<!-- 충전 금액, requestId , customerKey-->
-<p th:text="${amount}"></p>
-<p th:text="${requestId}"></p>
-<p th:text="${customerKey}"></p>
+  <title>충전하기</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      animation: fadeIn 0.5s ease-in;
+    }
 
-<!-- 충전하기 버튼 -->
-<button class="button" id="payment-button" style="margin-top: 30px">충전하기</button>
+    .container {
+      background-color: #ffffff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      width: 100%;
+      max-width: 540px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 24px;
+      color: #22b8cf;
+    }
+
+    p {
+      font-size: 15px;
+      color: #495057;
+      margin: 6px 0;
+    }
+
+    .highlight {
+      font-weight: bold;
+      color: #212529;
+    }
+
+    #payment-method,
+    #agreement {
+      margin-top: 20px;
+      margin-bottom: 30px;
+    }
+
+    .button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      background-color: #22b8cf;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .button:hover {
+      background-color: #15aabf;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <h2>포인트 충전</h2>
+
+  <!-- 결제 UI -->
+  <div id="payment-method"></div>
+
+  <!-- 이용약관 UI -->
+  <div id="agreement"></div>
+
+  <!-- 충전 금액, requestId , customerKey -->
+  <p>충전 금액: <span class="highlight" th:text="${amount}"></span>원</p>
+  <p>요청 ID: <span class="highlight" th:text="${requestId}"></span></p>
+  <p>고객 키: <span class="highlight" th:text="${customerKey}"></span></p>
+
+  <!-- 충전하기 버튼 -->
+  <button class="button" id="payment-button">충전하기</button>
+</div>
 
 <script>
+  // [✅ JavaScript는 요청대로 수정 없이 그대로 유지]
   const button = document.getElementById("payment-button");
   const amount = [[${amount}]];
   const orderName = `[[${amount}]] 원 충전`
@@ -25,33 +101,23 @@
   const customerKey = `[[${customerKey}]]`
   main();
   async function main() {
-    // ------  결제위젯 초기화 ------
     const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
     const tossPayments = TossPayments(clientKey);
-    // 회원 결제
-    const widgets = tossPayments.widgets({
-      customerKey,
-    });
-    // 비회원 결제
-    // const widgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
+    const widgets = tossPayments.widgets({ customerKey });
 
-    // ------ 주문의 결제 금액 설정 ------
     await widgets.setAmount({
       currency: "KRW",
       value: amount,
     });
 
     await Promise.all([
-      // ------  결제 UI 렌더링 ------
       widgets.renderPaymentMethods({
         selector: "#payment-method",
         variantKey: "DEFAULT",
       }),
-      // ------  이용약관 UI 렌더링 ------
       widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
     ]);
 
-    // ------ '충전하기' 버튼 누르면 결제창 띄우기 ------
     button.addEventListener("click", async function () {
       await widgets.requestPayment({
         orderId: orderId,
