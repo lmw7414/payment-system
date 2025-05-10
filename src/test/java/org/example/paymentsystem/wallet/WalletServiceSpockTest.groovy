@@ -1,11 +1,8 @@
-package org.example.paymentsystem
+package org.example.paymentsystem.wallet
 
 import org.example.paymentsystem.exception.ChargeFailException
 import org.example.paymentsystem.wallet.dto.AddBalanceWalletRequest
 import org.example.paymentsystem.wallet.dto.CreateWalletRequest
-import org.example.paymentsystem.wallet.Wallet
-import org.example.paymentsystem.wallet.WalletRepository
-import org.example.paymentsystem.wallet.WalletService
 import spock.lang.Specification
 
 class WalletServiceSpockTest extends Specification {
@@ -60,7 +57,8 @@ class WalletServiceSpockTest extends Specification {
         when:
         def result = walletService.findWalletByUserId(userId)
         then:
-        result == null
+        def ex = thrown(ChargeFailException)
+        ex.message == "지갑이 존재하지 않습니다."
         println result
     }
 

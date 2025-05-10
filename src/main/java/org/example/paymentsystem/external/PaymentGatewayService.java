@@ -3,11 +3,8 @@ package org.example.paymentsystem.external;
 import lombok.RequiredArgsConstructor;
 import org.example.paymentsystem.checkout.ConfirmRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
-import org.springframework.boot.web.client.ClientHttpRequestFactories;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -30,7 +27,7 @@ public class PaymentGatewayService {
         String authorizations = "Basic " + new String(encodedBytes);
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(Duration.ofMillis(3));
+        factory.setReadTimeout(Duration.ofSeconds(3));
         RestClient defaultClient = RestClient.builder()
                 .requestFactory(factory)
                 .build();

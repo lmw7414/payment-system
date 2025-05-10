@@ -1,4 +1,4 @@
-package org.example.paymentsystem;
+package org.example.paymentsystem.processing;
 
 import org.example.paymentsystem.checkout.ConfirmRequest;
 import org.example.paymentsystem.exception.ChargeFailException;
@@ -6,7 +6,8 @@ import org.example.paymentsystem.exception.ErrorCode;
 import org.example.paymentsystem.external.PaymentGatewayService;
 import org.example.paymentsystem.order.Order;
 import org.example.paymentsystem.order.OrderRepository;
-import org.example.paymentsystem.processing.PaymentProcessingService;
+import org.example.paymentsystem.order.OrderResponse;
+import org.example.paymentsystem.order.OrderService;
 import org.example.paymentsystem.wallet.WalletRepository;
 import org.example.paymentsystem.wallet.WalletService;
 import org.example.paymentsystem.wallet.dto.CreateWalletRequest;
@@ -37,6 +38,8 @@ public class PaymentProcessingServiceIntegrationTest {
     PaymentGatewayService paymentGatewayService;
     @Autowired
     OrderRepository orderRepository;
+    @Autowired
+    OrderService orderService;
     @Autowired
     WalletService walletService;
     @Autowired
@@ -71,8 +74,8 @@ public class PaymentProcessingServiceIntegrationTest {
         // When
         paymentProcessingService.createCharge(userId, confirmRequest, false);
         // Then
-        Order updated = orderRepository.findByRequestId(requestId);
-        assertEquals(APPROVED, updated.getStatus());
+        OrderResponse updated = orderService.findByRequestId(requestId);
+        assertEquals(APPROVED, updated.status());
     }
 
     @Test
@@ -91,7 +94,7 @@ public class PaymentProcessingServiceIntegrationTest {
         assertEquals(ErrorCode.WALLET_NOT_FOUND, ex.getCode());
 
         // and: 상태 확인까지 한다면
-        Order updated = orderRepository.findByRequestId(requestId);
-        assertEquals(FAILED, updated.getStatus());
+        OrderResponse updated = orderService.findByRequestId(requestId);
+        assertEquals(FAILED, updated.status());
     }
 }

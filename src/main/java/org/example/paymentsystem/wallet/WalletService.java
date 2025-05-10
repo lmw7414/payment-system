@@ -18,10 +18,9 @@ public class WalletService {
 
     @Transactional
     public CreateWalletResponse createWallet(CreateWalletRequest request) {
-        FindWalletResponse isWalletExist = findWalletByUserId(request.userId());
-        if (isWalletExist != null) {
+        walletRepository.findWalletByUserId(request.userId()).ifPresent(wallet -> {
             throw new ChargeFailException(ErrorCode.WALLET_ALREADY_EXISTS);
-        }
+        });
         final Wallet wallet = walletRepository.save(new Wallet(request.userId()));
         return CreateWalletResponse.from(wallet);
     }
@@ -30,11 +29,10 @@ public class WalletService {
     @Transactional
     public AddBalanceWalletResponse addBalance(AddBalanceWalletRequest request) {
         final Wallet wallet = findWalletByIdOrThrowException(request.walletId());
-
         BigDecimal balance = wallet.getBalance();
         balance = balance.add(request.amount());
-        if(balance.compareTo(BigDecimal.ZERO) < 0) throw new ChargeFailException(ErrorCode.NOT_ENOUGH_MONEY);
-        if(BALANCE_LIMIT.compareTo(balance) < 0) throw new ChargeFailException(ErrorCode.EXCEEDED_BALANCE);
+        if (balance.compareTo(BigDecimal.ZERO) < 0) throw new ChargeFailException(ErrorCode.NOT_ENOUGH_MONEY);
+        if (BALANCE_LIMIT.compareTo(balance) < 0) throw new ChargeFailException(ErrorCode.EXCEEDED_BALANCE);
         wallet.setBalance(balance);
         wallet.setUpdatedAt(LocalDateTime.now());
         walletRepository.save(wallet);
@@ -45,10 +43,11 @@ public class WalletService {
     public FindWalletResponse findWalletByUserId(Long userId) {
         return walletRepository.findWalletByUserId(userId)
                 .map(FindWalletResponse::from)
-                .orElse(null);
+                .orElseThrow(() -> new ChargeFailException(ErrorCode.WALLET_NOT_FOUND));
     }
 
     public Wallet findWalletByIdOrThrowException(Long walletId) {
-        return walletRepository.findById(walletId).orElseThrow(() -> new ChargeFailException(ErrorCode.WALLET_NOT_FOUND));
+        return walletRepository.findById(walletId)
+                .orElseThrow(() -> new ChargeFailException(ErrorCode.WALLET_NOT_FOUND));
     }
 }

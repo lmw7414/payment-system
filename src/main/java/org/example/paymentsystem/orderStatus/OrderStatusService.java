@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.example.paymentsystem.checkout.ConfirmRequest;
+import org.example.paymentsystem.exception.ChargeFailException;
+import org.example.paymentsystem.exception.ErrorCode;
 import org.example.paymentsystem.order.Order;
 import org.example.paymentsystem.order.OrderRepository;
 import org.example.paymentsystem.retry.RetryRequest;
@@ -28,7 +30,7 @@ public class OrderStatusService {
 
     @Transactional
     public void approveOrder(String orderId) {
-        final Order order = orderRepository.findByRequestId(orderId);
+        final Order order = orderRepository.findByRequestId(orderId).orElseThrow(() -> new ChargeFailException(ErrorCode.ORDER_NOT_FOUND));
         order.setStatus(APPROVED);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
@@ -36,7 +38,7 @@ public class OrderStatusService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void failOrder(String orderId) {
-        final Order order = orderRepository.findByRequestId(orderId);
+        final Order order = orderRepository.findByRequestId(orderId).orElseThrow(() -> new ChargeFailException(ErrorCode.ORDER_NOT_FOUND));
         order.setStatus(FAILED);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);

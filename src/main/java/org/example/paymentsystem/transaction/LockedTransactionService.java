@@ -36,12 +36,12 @@ public class LockedTransactionService {
 
     @Transactional
     public PaymentTransactionResponse payment(PaymentTransactionRequest request) {
-        final Wallet wallet = walletService.findWalletByIdOrThrowException(request.walletId());
-        Lock lock = walletLockerService.acquireLock(wallet.getId());
+        final FindWalletResponse wallet = walletService.findWalletByUserId(request.userId());
+        Lock lock = walletLockerService.acquireLock(wallet.id());
         if (lock == null) throw new IllegalStateException("cannot get lock");
         try {
             log.info("락 획득:" + wallet);
-            return transactionService.payment(request);
+            return transactionService.balancePayment(request);
         } finally {
             walletLockerService.releaseLock(lock);
         }

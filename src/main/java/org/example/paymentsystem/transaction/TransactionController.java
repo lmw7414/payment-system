@@ -21,7 +21,7 @@ public class TransactionController {
 
     @PostMapping("/api/balance/payment")
     public PaymentTransactionResponse payment(@RequestBody PaymentTransactionRequest request) {
-        return transactionService.payment(request);
+        return transactionService.balancePayment(request);
     }
 
 }

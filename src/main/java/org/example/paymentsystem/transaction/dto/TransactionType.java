@@ -1,5 +1,5 @@
 package org.example.paymentsystem.transaction.dto;
 
 public enum TransactionType {
-    CHARGE, PAYMENT
+    CHARGE, PG_PAYMENT, BALANCE_PAYMENT
 }

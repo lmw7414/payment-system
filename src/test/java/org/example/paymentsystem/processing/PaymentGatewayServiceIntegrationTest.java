@@ -1,4 +1,4 @@
-package org.example.paymentsystem;
+package org.example.paymentsystem.processing;
 
 import org.example.paymentsystem.checkout.ConfirmRequest;
 import org.example.paymentsystem.external.PaymentGatewayService;

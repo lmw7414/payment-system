@@ -2,75 +2,183 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8" />
+  <title>강의 결제</title>
   <script src="https://js.tosspayments.com/v2/standard"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f8f9fa;
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #343a40;
+    }
+
+    .section {
+      background-color: #ffffff;
+      padding: 20px 30px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .section p,
+    .section label {
+      margin: 10px 0;
+      font-size: 15px;
+      color: #495057;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 5px;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 15px;
+      background-color: #22b8cf;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #15aabf;
+    }
+
+    #payment-button {
+      width: 100%;
+    }
+
+    .highlight {
+      font-weight: bold;
+      font-size: 17px;
+      color: #212529;
+    }
+
+    .label-inline {
+      display: flex;
+      align-items: center;
+    }
+
+    #payment-method, #agreement {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-<!-- 할인 쿠폰 -->
-<div>
-  <input type="checkbox" id="coupon-box" />
-  <label for="coupon-box"> 5,000원 쿠폰 적용 </label>
-</div>
-<!-- 결제 UI -->
-<div id="payment-method"></div>
-<!-- 이용약관 UI -->
-<div id="agreement"></div>
-<!-- 강의명, 가격, requestId , customerKey-->
-<p th:text="${courseName}"></p>
-<p th:text="${amount}"></p>
-<p th:text="${requestId}"></p>
-<p th:text="${customerKey}"></p>
 
-<!-- 결제하기 버튼 -->
-<button class="button" id="payment-button" style="margin-top: 30px">결제하기</button>
+<h2>강의 결제</h2>
+
+<!-- 잔액 정보 -->
+<div class="section">
+  <p>보유 잔액: <span class="highlight" id="user-balance" th:text="${#numbers.formatDecimal(balance, 0, 0)}"></span>원</p>
+
+  <div class="label-inline">
+    <label for="use-balance">사용할 잔액:</label>
+    <input type="number" id="use-balance" min="0" th:attr="max=${balance}" />
+    <button id="apply-discount" style="margin-left: 10px;">적용</button>
+  </div>
+</div>
+
+<!-- 강의 정보 -->
+<div class="section">
+  <p>강의명: <span class="highlight" th:text="${courseName}"></span></p>
+  <p>총 결제 금액: <span class="highlight" th:text="${amount}"></span>원</p>
+  <p>최종 결제 금액: <span class="highlight" id="final-amount">[[${amount}]]</span>원</p>
+</div>
+
+<!-- 결제 UI -->
+<div class="section" id="payment-method"></div>
+<div class="section" id="agreement"></div>
+
+<!-- 결제 버튼 -->
+<div class="section" style="text-align: center;">
+  <button id="payment-button">결제하기</button>
+</div>
 
 <script>
-  const coupon = document.getElementById("coupon-box");
   const button = document.getElementById("payment-button");
-  const amount = [[${amount}]];
-  const orderName = `[[${courseName}]]`
-  const orderId = `[[${requestId}]]`
-  const customerKey = `[[${customerKey}]]`
-  main();
-  async function main() {
-    // ------  결제위젯 초기화 ------
-    const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-    const tossPayments = TossPayments(clientKey);
-    // 회원 결제
-    const widgets = tossPayments.widgets({
-      customerKey,
-    });
-    // 비회원 결제
-    // const widgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
+  const applyButton = document.getElementById("apply-discount");
+  const useBalanceInput = document.getElementById("use-balance");
 
-    // ------ 주문의 결제 금액 설정 ------
-    await widgets.setAmount({
-      currency: "KRW",
-      value: amount,
-    });
+  const amount = [[${amount}]];
+  const balance = [[${balance}]];
+  const orderName = `[[${courseName}]]`;
+  const orderId = `[[${requestId}]]`;
+  const customerKey = `[[${customerKey}]]`;
+
+  let finalAmount = amount;
+  let widgets;
+  const tossPayments = TossPayments("test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm");
+
+  main();
+
+  async function main() {
+    widgets = tossPayments.widgets({ customerKey });
+
+    await widgets.setAmount({ currency: "KRW", value: finalAmount });
 
     await Promise.all([
-      // ------  결제 UI 렌더링 ------
       widgets.renderPaymentMethods({
         selector: "#payment-method",
         variantKey: "DEFAULT",
       }),
-      // ------  이용약관 UI 렌더링 ------
-      widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+      widgets.renderAgreement({
+        selector: "#agreement",
+        variantKey: "AGREEMENT",
+      }),
     ]);
-
-    // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
-    button.addEventListener("click", async function () {
-      await widgets.requestPayment({
-        orderId: orderId,
-        orderName: orderName,
-        successUrl: window.location.origin + "/order-requested",
-        failUrl: window.location.origin + "/fail",
-        customerEmail: "customer123@gmail.com",
-        customerName: "김토스",
-        customerMobilePhone: "01012341234",
-      });
-    });
   }
+
+  applyButton.addEventListener("click", async () => {
+    const useBalance = Number(useBalanceInput.value) || 0;
+    const maxUsable = Math.min(balance, amount);
+
+    if (useBalance < 0 || useBalance > maxUsable) {
+      alert("적용 가능한 잔액 범위를 확인하세요.");
+      useBalanceInput.value = "";
+      return;
+    }
+
+    finalAmount = amount - useBalance;
+
+    await widgets.setAmount({
+      currency: "KRW",
+      value: finalAmount,
+    });
+
+    document.getElementById("final-amount").textContent = finalAmount;
+
+    localStorage.setItem("discountInfo", JSON.stringify({
+      totalAmount: amount,
+      usedBalance: useBalance,
+    }));
+
+    alert("할인이 적용되었습니다.");
+  });
+
+  button.addEventListener("click", async () => {
+    await widgets.requestPayment({
+      orderId,
+      orderName,
+      successUrl: window.location.origin + "/order-requested",
+      failUrl: window.location.origin + "/fail",
+      customerEmail: "customer123@gmail.com",
+      customerName: "김토스",
+      customerMobilePhone: "01012341234",
+    });
+  });
 </script>
 </body>
 </html>

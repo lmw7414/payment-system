@@ -1,8 +1,7 @@
-package org.example.paymentsystem;
+package org.example.paymentsystem.wallet;
 
 import org.example.paymentsystem.wallet.dto.CreateWalletRequest;
 import org.example.paymentsystem.wallet.dto.CreateWalletResponse;
-import org.example.paymentsystem.wallet.WalletService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
